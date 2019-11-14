@@ -7,6 +7,10 @@ PORT = 55555
 BUFSIZE = 64
 
 def isPrime(n) -> bool:
+    try:
+        n = int(n)
+    except:
+        return False
     # Corner cases 
     if (n <= 1): 
         return False
@@ -34,35 +38,44 @@ if __name__ == "__main__":
     print('Waiting for a connection')
     connection, client_address = server.accept()
 
+    prime = 97
+    a = AlphaPrime().findPrimitive(prime)
+    print(prime, a)
     clientCode = None
     serverCode = None
+
     try:
         print('Connection from: ', client_address)
 
         while True:
             data = connection.recv(BUFSIZE)
+            print(data.decode('utf-8'))
 
             # Jika server dan client sudah saling menerima code bil.prima
-            if serverCode and clientCode:
-                prime = 97
-                a = AlphaPrime().findPrimitive(prime)
+            if serverCode and clientCode and data:
+                print('Received message: ' + data.decode('utf-8'))
                 yFirst = (a**serverCode) % prime
                 ySecond = (a**clientCode) % prime
-                kFirst = (ySecond**serverCode) % prime
-                kSecond = (yFirst**clientCode) % prime
-                
+                key = (yFirst**clientCode) % prime
 
             # Jika data yang diterima bilangan prima,
             # maka dianggap sebagai secret code, server mengirim code juga untuk digenerate
-            elif isPrime(int(data.decode('utf-8'))):
+            elif isPrime(data.decode('utf-8')):
                 print('Received secret code: ' + data.decode('utf-8'))
                 clientCode = int(data.decode('utf-8'))
-                serverCode = int(input('input code: '))
-                connection.send(serverCode)   
+                message =  input('input code: ')
+                try:
+                    if isPrime(message):
+                        serverCode = int(message)
+                except:
+                    serverCode = None
+                connection.send(message.encode('utf-8'))   
             elif data:
                 print('False secret code!')
             else:
                 break
+
+
 
     finally:
         print('Closing current connection')
