@@ -1,6 +1,6 @@
 import socket
-from des import DesKey
 from alphaPrime import AlphaPrime
+from Encrypt import DES
 
 HOST = '127.0.0.1'
 PORT = 55555
@@ -53,10 +53,10 @@ if __name__ == "__main__":
                 yFirst = (a**serverCode) % prime
                 ySecond = (a**clientCode) % prime
                 key = (ySecond**serverCode) % prime 
+                print('Key :' + repr(key))
                 msg = input('Enter message: ')
-                DES = DesKey(bytes(key))
-                encryption = DES.encrypt(msg.encode('utf-8'), padding=True)
-                message = str(encryption)
+                des = DES().encrypt(msg, str(key))
+                message = des
 
             elif isPrime(message):
                 clientCode = int(message)

@@ -1,6 +1,6 @@
 import socket
-from des import DesKey
 from alphaPrime import AlphaPrime
+from Decrypt import DES
 
 HOST = ''
 PORT = 55555
@@ -51,30 +51,31 @@ if __name__ == "__main__":
             data = connection.recv(BUFSIZE)
             print(data.decode('utf-8'))
 
-            # Jika server dan client sudah saling menerima code bil.prima
-            if serverCode and clientCode and data:
-                print('Received message: ' + data.decode('utf-8'))
-                yFirst = (a**serverCode) % prime
-                ySecond = (a**clientCode) % prime
-                key = (yFirst**clientCode) % prime
-
             # Jika data yang diterima bilangan prima,
             # maka dianggap sebagai secret code, server mengirim code juga untuk digenerate
-            elif isPrime(data.decode('utf-8')):
+            if isPrime(data.decode('utf-8')) and not clientCode:
                 print('Received secret code: ' + data.decode('utf-8'))
                 clientCode = int(data.decode('utf-8'))
                 message =  input('input code: ')
                 try:
                     if isPrime(message):
                         serverCode = int(message)
-                except:
+                except:     
                     serverCode = None
                 connection.send(message.encode('utf-8'))   
+            # Jika server dan client sudah saling menerima code bil.prima
+            elif serverCode and clientCode and data:
+                print('Received message: ' + data.decode('utf-8'))
+                yFirst = (a**serverCode) % prime
+                ySecond = (a**clientCode) % prime
+                key = (yFirst**clientCode) % prime
+                des = DES().decrypt(data.decode('utf-8'), str(key))
+                print('Decrypt message: ' + des)
+
             elif data:
                 print('False secret code!')
             else:
                 break
-
 
 
     finally:
