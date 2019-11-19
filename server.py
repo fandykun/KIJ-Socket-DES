@@ -35,7 +35,6 @@ def sendMessage(socket, key):
 
 if __name__ == "__main__":    
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((HOST, PORT))
     server.listen()
 
@@ -46,14 +45,12 @@ if __name__ == "__main__":
     serverCode = None
     prime = 97
     a = AlphaPrime().findPrimitive(prime)
-    flag = 0
 
     print('Connection from: ', client_address)
     while not serverCode or not clientCode:
         data = connection.recv(BUFSIZE)
 
-        # Jika data yang diterima bilangan prima,
-        # maka dianggap sebagai secret code, server mengirim code juga untuk digenerate
+        # Jika belum mendapat secret code
         if not clientCode:
             print('Received secret code: ' + data.decode('utf-8'))
             clientCode = int(data.decode('utf-8'))
