@@ -7,29 +7,35 @@ HOST = '127.0.0.1'
 PORT = 12345
 BUFSIZE = 64
 
-def receiveMessage(socket, key):
+def receiveMessage(socket, key, start):
     des = DES()
     start = True
     while start:
-        message = socket.recv(BUFSIZE)
-        if message == b'':
+        try:
+            message = socket.recv(BUFSIZE)
+            if message == b'':
+                start = False
+            else:
+                print('Received message: ' + message.decode('utf-8'))
+                decrypt = des.decrypt(message.decode('utf-8'), str(key))
+                print('Decrypt message: ' + decrypt)
+        except:
             start = False
-        else:
-            print('Received message: ' + message.decode('utf-8'))
-            decrypt = des.decrypt(message.decode('utf-8'), str(key))
-            print('Decrypt message: ' + decrypt)
     
 
-def sendMessage(socket, key):
+def sendMessage(socket, key, start):
     des = DES()
     start = True
     while start:
-        message = input('enter message: ')
-        if message == 'quit':
+        try:
+            message = input('enter message: ')
+            if message == 'quit':
+                start = False
+            else:
+                encrypt = des.encrypt(message, str(key))
+                socket.send(encrypt.encode('utf-8'))
+        except:
             start = False
-        else:
-            encrypt = des.encrypt(message, str(key))
-            socket.send(encrypt.encode('utf-8'))
     
     socket.close()
 
@@ -65,8 +71,9 @@ if __name__ == "__main__":
             break
 
     key = (serverCode**secret) % prime
-    send = threading.Thread(target=sendMessage, args=(client, key))
-    receive = threading.Thread(target=receiveMessage, args=(client, key))
+    start = True
+    send = threading.Thread(target=sendMessage, args=(client, key, start))
+    receive = threading.Thread(target=receiveMessage, args=(client, key, start))
     
     send.start()
     receive.start()
