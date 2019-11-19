@@ -226,6 +226,61 @@ class DES:
         # print("Chiper in bin : " , chiper)
         return hex(int(chiper, 2))[2:]
         
+    def decrypt(self, m, key):
+        keyInBin= bin(int(key, 16))[2:].zfill(64)
+        kPlus = self.changeToTable(7, 8, pc1, keyInBin)
 
+        c = []
+        d = []
+        c.append(kPlus[:28])
+        d.append(kPlus[28:])
+
+        self.subkeys(c)
+        self.subkeys(d)
+
+        cd = []
+        k = []
+        for x in list(range(17)) :
+            cd.append(c[x]+d[x])
+
+        for w in range(1, 17):
+            temp = self.changeToTable(6, 8, pc2, cd[w])
+            k.append(temp)
+            temp = ""
+
+        mInBin = bin(int(m, 16))[2:].zfill(64)
+        mIP = self.changeToTable(8, 8, ip, mInBin)
+        # print(mIP)
+
+        l = []
+        r = []
+        l.append(mIP[:32])
+        r.append(mIP[32:])
+
+
+        for y in list(range(16)) :
+            sb = ""
+            pSb= ""
+            eR = self.changeToTable(6, 8, eBitSelection, r[y])
+            k_XOR_eR =bin(int(k[15-y], 2) ^ int(eR, 2))[2:].zfill(48)
+            awal = 0
+            akhir = 6
+            for x in list(range(8)) :
+                b = k_XOR_eR[awal:akhir]    
+                ySTable = int((b[0]+b[-1]), 2)
+                xSTable = int(b[1:5], 2)
+                sb += str(bin(s_box[x][ySTable][xSTable])[2:].zfill(4))
+                awal += 6
+                akhir += 6   
+            pSb= self.changeToTable(4, 8, pBox, sb)
+            r.append(bin(int(l[y], 2) ^ int(pSb, 2))[2:].zfill(32))
+            l.append(r[y])
+            
+        rl = r[16] + l[16]
+        # print(rl)
+        chiper = self.changeToTable(8, 8, invIp, rl)
+        # print(chiper)
+        return hex(int(chiper, 2))[2:]
+            
 
 
